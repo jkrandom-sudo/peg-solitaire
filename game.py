@@ -6,7 +6,7 @@ from typing import Optional, Tuple
 import score as score_mod
 import settings as settings_mod
 import solver as solver_mod
-from board import Board, DIRECTIONS, IllegalMove, in_bounds
+from board import Board, DIRECTIONS, IllegalMove, in_bounds, has_peg, is_hole
 from i18n import t
 from sound import Sound
 
@@ -128,6 +128,15 @@ def play_round(s: dict, sound: Sound, input_func, output, rng=None) -> Optional[
             write(t(lang, "bad_format"))
             continue
         src, direction = parsed
+        # Strengthen validation: check peg existence before board.play()
+        if not is_hole(board.grid, src[0], src[1]):
+            write(t(lang, "illegal"))
+            sound.illegal()
+            continue
+        if not has_peg(board.grid, src[0], src[1]):
+            write(t(lang, "no_peg_at"))
+            sound.illegal()
+            continue
         try:
             board.play(src, direction)
         except IllegalMove:
